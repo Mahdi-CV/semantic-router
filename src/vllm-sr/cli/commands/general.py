@@ -9,6 +9,7 @@ from cli.commands.config import (
     config_command,
     import_config_from_source_command,
     migrate_config_command,
+    propose_config_command,
 )
 from cli.commands.rag import rag_list_command
 from cli.commands.validate import validate_command
@@ -30,6 +31,7 @@ def config(ctx: click.Context) -> None:
         vllm-sr config envoy --config my-config.yaml
         vllm-sr config migrate --config old.yaml
         vllm-sr config import --from openclaw --source openclaw.json
+        vllm-sr config propose --config config.yaml --intent intent.yaml
     """
     if ctx.invoked_subcommand is not None:
         return
@@ -125,6 +127,76 @@ def config_import(
         from_type=from_type,
         source_path=source_path,
         target_path=target_path,
+        force=force,
+    )
+
+
+@config.command("propose")
+@click.option(
+    "--config",
+    "config_path",
+    default="config.yaml",
+    show_default=True,
+    help="Canonical base configuration to preserve and extend.",
+)
+@click.option(
+    "--intent",
+    "intent_path",
+    required=True,
+    help="Bounded proposal intent YAML.",
+)
+@click.option(
+    "--fragment-root",
+    default="config/fragments",
+    show_default=True,
+    help="Root containing maintained fragment YAML files.",
+)
+@click.option(
+    "--output",
+    "output_dir",
+    default="config-proposal",
+    show_default=True,
+    help="Directory for review artifacts.",
+)
+@click.option(
+    "--endpoint",
+    "validation_endpoint",
+    default="http://localhost:8080",
+    show_default=True,
+    help="Router management API base URL or /config/router/validate endpoint.",
+)
+@click.option(
+    "--timeout",
+    "validation_timeout",
+    default=10.0,
+    show_default=True,
+    type=click.FloatRange(min=0.1),
+    help="Canonical validation request timeout in seconds.",
+)
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Replace existing generated artifacts in the output directory.",
+)
+@exit_with_logged_error(log)
+def config_propose(
+    config_path: str,
+    intent_path: str,
+    fragment_root: str,
+    output_dir: str,
+    validation_endpoint: str,
+    validation_timeout: float,
+    force: bool,
+) -> None:
+    """Generate a validated, non-mutating config proposal from maintained fragments."""
+
+    propose_config_command(
+        config_path=config_path,
+        intent_path=intent_path,
+        fragment_root=fragment_root,
+        output_dir=output_dir,
+        validation_endpoint=validation_endpoint,
+        validation_timeout=validation_timeout,
         force=force,
     )
 

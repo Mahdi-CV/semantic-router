@@ -1,0 +1,4 @@
+schema_version: vllm-sr/config-proposal-intent/v1
+goal: Add reviewable code and urgency keyword signals.
+fragments:
+  - signal/keyword/nlp

@@ -24,6 +24,47 @@ state without rewriting the source file. Concurrent `serve` and `stop`
 operations for the same runtime and stack are serialized; retry after the
 active lifecycle operation finishes.
 
+### Review a fragment-based proposal
+
+Use `config propose` when an operator or automation workflow has selected a
+bounded set of maintained configuration fragments but a human must review the
+result before any deployment changes:
+
+```bash
+vllm-sr config propose \
+  --config config/recipes/knowledge/config.yaml \
+  --intent config/proposals/keyword-signals.yaml \
+  --endpoint http://localhost:8080 \
+  --output /tmp/keyword-signal-proposal
+```
+
+The command deterministically combines the base configuration with the selected
+maintained fragments, then sends the candidate to the Router's canonical
+`POST /config/router/validate` endpoint with `compare_to_active: true`. The
+endpoint must expose validation contract `v1` from #3477. Use a base
+configuration that represents the Router's active snapshot so the structured
+diff compares the intended documents.
+
+After validation succeeds, the command writes four review artifacts:
+
+- `proposed-config.yaml`, the complete proposed configuration;
+- `proposal-diff.json`, the Router's bounded, structured, redacted diff;
+- `provenance.json`, containing versioned base, intent, source, and proposal
+  identities;
+- `validation.json`, the complete structured validation receipt returned by the
+  Router.
+
+Proposal intents contain a goal and maintained fragment IDs. They cannot carry
+arbitrary configuration fields, deployment actions, or credentials. Conflicting
+fragments, unsupported IDs, invalid candidates, and unsupported validation
+contracts fail explicitly. Generation never changes the base file or calls a
+Router update, apply, deployment, or activation endpoint.
+
+The proposed YAML preserves semantic fields and list ordering, but the Router
+normalizes its formatting; source comments are not retained. Review the
+generated diff before using the proposal in a separate apply or activation
+workflow.
+
 ## Dashboard
 
 An empty local workspace starts the Dashboard in setup mode. Use it to bind

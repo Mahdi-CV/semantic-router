@@ -7,6 +7,7 @@ or start from a maintained routing recipe.
 | --- | --- |
 | See every supported field | `config/config.yaml`, the exhaustive canonical reference config |
 | Add one routing capability | `config/fragments/` |
+| Generate a reviewable change from maintained fragments | `config/proposals/` |
 | Run a complete use case | `config/recipes/` |
 | Serve a packaged virtual model | `config/recipes/built-in/` |
 | Configure a storage or service backend | `config/runtime/` |
@@ -76,6 +77,15 @@ The corresponding website sections are
 [`tutorials/algorithm/`](../website/docs/tutorials/algorithm/),
 [`tutorials/plugin/`](../website/docs/tutorials/plugin/), and
 [`tutorials/global/`](../website/docs/tutorials/global/).
+
+### Proposals
+
+`config/proposals/` contains bounded intent examples for
+`vllm-sr config propose`. Proposal generation starts from a canonical base
+configuration and maintained fragments, preserves unrelated fields, emits an
+inspectable diff and provenance digests, and asks the Router's canonical
+side-effect-free validation endpoint to validate the result without applying or
+activating it.
 
 ### Recipes and built-in models
 
