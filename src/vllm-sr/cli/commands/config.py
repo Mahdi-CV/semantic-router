@@ -12,6 +12,11 @@ import yaml
 from cli.config_generator import generate_envoy_config_from_user_config
 from cli.config_import import import_config_command as run_import_config_command
 from cli.config_migration import migrate_config_data
+from cli.config_proposal import (
+    ConfigProposalError,
+    ConfigProposalResult,
+    propose_config,
+)
 from cli.config_schema import schema_document
 from cli.config_schema.views import parse_surface_selector, schema_view
 from cli.parser import ConfigParseError, load_config_file, parse_user_config
@@ -239,3 +244,45 @@ def import_config_from_source_command(
         target_path=target_path,
         force=force,
     )
+
+
+def propose_config_command(
+    *,
+    config_path: str,
+    intent_path: str,
+    fragment_root: str,
+    output_dir: str,
+    validation_endpoint: str | None,
+    validation_timeout: float,
+    validation_token_env: str,
+    force: bool = False,
+) -> ConfigProposalResult:
+    """Generate review-only configuration proposal artifacts."""
+
+    try:
+        result = propose_config(
+            base_config=Path(config_path),
+            intent_path=Path(intent_path),
+            fragment_root=Path(fragment_root),
+            output_dir=Path(output_dir),
+            validation_endpoint=validation_endpoint,
+            validation_timeout=validation_timeout,
+            validation_token_env=validation_token_env,
+            force=force,
+        )
+    except (OSError, ConfigProposalError) as error:
+        raise RuntimeError(str(error)) from error
+
+    success("Configuration proposal generated")
+    heading("Review artifacts")
+    fields(
+        (
+            ("Proposed config", result.proposed_config),
+            ("Diff", result.diff),
+            ("Provenance", result.provenance),
+            ("Validation", result.validation),
+            ("Base digest", result.base_sha256),
+            ("Proposal digest", result.proposal_sha256),
+        )
+    )
+    return result

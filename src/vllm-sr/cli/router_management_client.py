@@ -120,9 +120,19 @@ class RouterManagementClient:
             params["expanded"] = "true"
         return self.request("GET", CONFIG_SCHEMA_PATH, params=params)
 
-    def validate_config(self, yaml_text: str) -> RouterResponse:
+    def validate_config(
+        self,
+        yaml_text: str,
+        *,
+        compare_to_active: bool = False,
+    ) -> RouterResponse:
+        payload: dict[str, Any] = {"yaml": yaml_text}
+        if compare_to_active:
+            payload["compare_to_active"] = True
         return self.request(
-            "POST", f"{CONFIG_PATH}/validate", payload={"yaml": yaml_text}
+            "POST",
+            f"{CONFIG_PATH}/validate",
+            payload=payload,
         )
 
     def plan_config(self, yaml_text: str, mode: str) -> RouterResponse:

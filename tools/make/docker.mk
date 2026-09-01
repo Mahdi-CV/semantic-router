@@ -506,6 +506,7 @@ vllm-sr-test: vllm-sr-install-cli
 	@cd e2e/testing/vllm-sr-cli && PATH="$(AGENT_VENV)/bin:$$PATH" "$(AGENT_PYTHON)" run_cli_tests.py --verbose
 	@PATH="$(AGENT_VENV)/bin:$$PATH" "$(AGENT_PYTHON)" -m pytest -q \
 		src/vllm-sr/tests/test_container_log_spool.py \
+		src/vllm-sr/tests/test_config_proposal.py \
 		src/vllm-sr/tests/test_envoy_identity_and_local_bindings.py \
 		src/vllm-sr/tests/test_evaluation_live.py \
 		src/vllm-sr/tests/test_evaluation_worker_task_limit.py \
@@ -514,6 +515,7 @@ vllm-sr-test: vllm-sr-install-cli
 		src/vllm-sr/tests/test_recipe_builtin.py \
 		src/vllm-sr/tests/test_reasoning_controls.py \
 		src/vllm-sr/tests/test_route_command.py \
+		src/vllm-sr/tests/test_router_management_client.py \
 		src/vllm-sr/tests/test_runtime_lifecycle.py \
 		src/vllm-sr/tests/test_runtime_observability.py \
 		src/vllm-sr/tests/test_setup_bootstrap.py \

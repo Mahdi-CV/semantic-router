@@ -121,3 +121,28 @@ def test_management_client_requests_expanded_section_schema(
         "path": "routing",
         "expanded": "true",
     }
+
+
+def test_management_client_requests_active_config_comparison(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[str, str, dict[str, Any]]] = []
+
+    def request(method: str, url: str, **kwargs: Any) -> _Response:
+        calls.append((method, url, kwargs))
+        return _Response()
+
+    monkeypatch.setattr("cli.router_management_client.requests.request", request)
+
+    RouterManagementClient("http://localhost:8080").validate_config(
+        "version: v0.3\n",
+        compare_to_active=True,
+    )
+
+    method, url, kwargs = calls[0]
+    assert method == "POST"
+    assert url == "http://localhost:8080/api/v1/config/validate"
+    assert kwargs["json"] == {
+        "yaml": "version: v0.3\n",
+        "compare_to_active": True,
+    }
